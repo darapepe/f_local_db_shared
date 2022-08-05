@@ -29,7 +29,7 @@ class _MyAppState extends State<MyApp> {
             if (controller.logged) {
               return Content();
             }
-            return LoginPage();
+            return const LoginPage();
           },
         ));
   }

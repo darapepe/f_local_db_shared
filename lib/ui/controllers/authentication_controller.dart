@@ -26,11 +26,22 @@ class AuthenticationController extends GetxController {
   String get storeUserEmail => _storeUserEmail.value;
   bool get storeUser => _storeUser.value;
 
+  bool get logged => _logged.value;
   // it returns _logged, if it is true it calls getStoredUser
-  bool get logged {}
+  // bool get logged {
+  //   if (_authentication.getStoredUser().isBlank == true) {
+  //     _logged.value = false;
+  //     return false;
+//    } else {
+  //     _logged.value = true;
+//      return true;
+//    }
+  // }
 
   // besides updating _storeUser, if false it clears stored data
-  set storeUser(bool mode) {}
+  set storeUser(bool mode) {
+    _storeUser.value = mode;
+  }
 
   // updates _logged
   set logged(bool mode) {
@@ -38,25 +49,42 @@ class AuthenticationController extends GetxController {
   }
 
   // this method should clean the user data on sharedPrefs and controller
-  Future<void> clearStoredUser() async {}
+  Future<void> clearStoredUser() async {
+    await _authentication.clearStoredUser();
+    _logged.value = false;
+  }
 
   // this method gets the stored user on sharedPrefs and updates the data on
   // the controller
   Future<void> getStoredUser() async {
+    User user = await _authentication.getStoredUser();
     logInfo(
         'AuthenticationController getStoredUser and got <${user.email}> <${user.password}>');
   }
 
   // this method clears all stored data
-  clearAll() async {}
+  clearAll() async {
+    await _authentication.clearAll();
+    _logged.value = false;
+  }
 
   // used to send login data, if user data is ok and if storeUser is true
   // it also stores the user on controller
-  Future<bool> login(user, password) async {}
+  Future<bool> login(user, password) async {
+    bool rta = await _authentication.login(storeUser, user, password);
+    _logged.value = rta;
+    return Future.value(rta);
+  }
 
   // used to send signup data
-  Future<bool> signup(user, password) async {}
+  Future<bool> signup(user, password) async {
+    await _authentication.signup(user, password);
+    return Future.value(true);
+  }
 
   // used to logout the current user
-  void logout() async {}
+  void logout() async {
+    await _authentication.logout();
+    _logged.value = false;
+  }
 }
