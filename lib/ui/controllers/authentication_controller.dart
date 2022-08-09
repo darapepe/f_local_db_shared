@@ -26,21 +26,23 @@ class AuthenticationController extends GetxController {
   String get storeUserEmail => _storeUserEmail.value;
   bool get storeUser => _storeUser.value;
 
-  bool get logged => _logged.value;
-  // it returns _logged, if it is true it calls getStoredUser
-  // bool get logged {
-  //   if (_authentication.getStoredUser().isBlank == true) {
-  //     _logged.value = false;
-  //     return false;
-//    } else {
-  //     _logged.value = true;
-//      return true;
-//    }
-  // }
+  //bool get logged => _logged.value;
+  //it returns _logged, if it is true it calls getStoredUser
+  bool get logged {
+    if (_logged.value) {
+      getStoredUser();
+    }
+    return _logged.value;
+  }
 
   // besides updating _storeUser, if false it clears stored data
   set storeUser(bool mode) {
     _storeUser.value = mode;
+    if (mode == false) {
+      clearStoredUser();
+      _storeUserEmail.value = "";
+      _storeUserPassword.value = "";
+    }
   }
 
   // updates _logged
@@ -58,6 +60,8 @@ class AuthenticationController extends GetxController {
   // the controller
   Future<void> getStoredUser() async {
     User user = await _authentication.getStoredUser();
+    _storeUserEmail.value = user.email;
+    _storeUserPassword.value = user.password;
     logInfo(
         'AuthenticationController getStoredUser and got <${user.email}> <${user.password}>');
   }
@@ -66,12 +70,27 @@ class AuthenticationController extends GetxController {
   clearAll() async {
     await _authentication.clearAll();
     _logged.value = false;
+    _storeUserEmail.value = "";
+    _storeUserPassword.value = "";
+    _storeUser.value = false;
   }
 
   // used to send login data, if user data is ok and if storeUser is true
   // it also stores the user on controller
   Future<bool> login(user, password) async {
+    logInfo('AuthenticationController login $storeUser $user $password');
+
     bool rta = await _authentication.login(storeUser, user, password);
+    if (storeUser) {
+      if (rta) {
+        _storeUserEmail.value = user;
+        _storeUserPassword.value = password;
+        _storeUser.value = true;
+      }
+    } else {
+      _storeUserEmail.value = "";
+      _storeUserPassword.value = "";
+    }
     _logged.value = rta;
     return Future.value(rta);
   }
@@ -86,5 +105,7 @@ class AuthenticationController extends GetxController {
   void logout() async {
     await _authentication.logout();
     _logged.value = false;
+    _storeUserEmail.value = "";
+    _storeUserPassword.value = "";
   }
 }
